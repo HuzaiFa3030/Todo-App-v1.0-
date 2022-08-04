@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useRef} from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -18,8 +18,10 @@ const App = () => {
   const [currentTodo, setCurrentTodo] = useState();
 
   const handleSubmit = value => {
-    if (value == null) return;
-    setNewTask([...newTask, value]);
+    value != null
+      ? setNewTask([...newTask, value])
+      : alert('Please Enter Some Text...');
+
     setTask(null);
     Keyboard.dismiss();
   };
@@ -27,17 +29,22 @@ const App = () => {
   const handleDelete = value => {
     setNewTask(newTask.filter((v, i) => i != value));
   };
-
+  const editTextInput = useRef();
   const handleEdit = async value => {
     setTask(value.title);
     setCurrentTodo(value);
     setEditing(true);
+    editTextInput.current.focus();
   };
 
   const updateEdit = async val => {
     setEditing(false);
     setTask(null);
     newTask[newTask.indexOf(currentTodo.title)] = val;
+  };
+
+  const deleteAll = () => {
+    setNewTask([]);
   };
 
   const Item = ({title, id}) => (
@@ -51,7 +58,7 @@ const App = () => {
             <MaterialIcon
               name="edit"
               color={'#55BCF6'}
-              size={20}></MaterialIcon>
+              size={22}></MaterialIcon>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -60,19 +67,37 @@ const App = () => {
             <MaterialIcon
               name="delete"
               color={'#55BCF6'}
-              size={20}></MaterialIcon>
+              size={22}></MaterialIcon>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
+  
 
   const renderItem = ({item, index}) => <Item title={item} id={index} />;
 
   return (
     <View style={styles.body}>
-      <Text style={styles.heading}>Task To Do...</Text>
-
+      <View style={styles.headingDiv}>
+        <Text style={styles.heading}>TODO TASKS</Text>
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            width: 110,
+            padding: 3,
+            justifyContent: 'space-around',
+            // backgroundColor: '#fff',
+          }}
+          onPress={deleteAll}>
+          <Text style={styles.deleteAllBtn}>Delete All</Text>
+          <MaterialIcon
+            onPress={deleteAll}
+            name="delete-forever"
+            color={'#55BCF6'}
+            size={22}></MaterialIcon>
+        </TouchableOpacity>
+      </View>
       <View style={{flex: 0.8}}>
         <View style={styles.taskItems}>
           <FlatList
@@ -85,13 +110,15 @@ const App = () => {
 
       <View style={styles.inpDiv}>
         <TextInput
+      ref={editTextInput}
+      //      onLayout={()=> inputRef.current.focus()}
           placeholder="type something..."
           keyboardType="default"
           style={styles.textInput}
           multiline={true}
           blurOnSubmit={true}
           maxLength={200}
-          onChangeText={text => setTask(text)}
+          onChangeText={text => setTask(text.trim())}
           value={task}
           returnKeyType="none"
         />
@@ -135,12 +162,25 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: '#55BCF6',
     fontWeight: 'bold',
-    padding: 4,
-    justifyContent: 'center',
-    textAlign: 'center',
+  },
+  headingDiv: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
     borderBottomWidth: 3,
     borderBottomColor: '#55BCF6',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingLeft: 20,
+    padding: 5,
   },
+  deleteAllBtn: {
+    fontSize: 16,
+    color: '#55BCF6',
+    fontWeight: 'bold',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   inpDiv: {
     flex: 0.175,
     width: '100%',
